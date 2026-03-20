@@ -27,6 +27,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', sans-serif; background: var(--bg); color: var(--ink); }
+body.sheet-open { overflow: hidden; position: fixed; width: 100%; }
 
 #app { display: flex; flex-direction: column; height: 100%; }
 
@@ -109,6 +110,7 @@ html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギ�
   border-radius: 20px 20px 0 0;
   padding: 0 0 calc(var(--safe-bottom) + 20px);
   max-height: 94vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 18px; }
 .sheet-title { font-size: 16px; font-weight: 700; padding: 0 20px 14px; border-bottom: 1px solid var(--border); }
@@ -332,6 +334,7 @@ function openAdd() {
   document.getElementById('btn-del-tx').style.display = 'none';
   setType('minus');
   document.getElementById('ov-input').classList.add('open');
+  document.body.classList.add('sheet-open');
 }
 
 function openEdit(id) {
@@ -347,6 +350,7 @@ function openEdit(id) {
   setType(tx.type);
   document.getElementById('f-cat').value = tx.category;
   document.getElementById('ov-input').classList.add('open');
+  document.body.classList.add('sheet-open');
 }
 
 function setType(t) {
@@ -358,15 +362,17 @@ function setType(t) {
   if (editingId) { const tx = state.transactions.find(t=>t.id===editingId); if (tx) document.getElementById('f-cat').value = tx.category; }
 }
 
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.classList.remove('sheet-open');
+}
+
 function submitTx() {
-  const date = document.getElementById('f-date').value;
-  const cat  = document.getElementById('f-cat').value;
-  const name = document.getElementById('f-name').value.trim();
-  const amount = parseFloat(document.getElementById('f-amount').value);
-  const memo = document.getElementById('f-memo').value.trim();
-  if (!date)            { showToast('日付を入力してください'); return; }
-  if (!name)            { showToast('内容を入力してください'); return; }
-  if (!amount||amount<=0){ showToast('金額を入力してください'); return; }
+  const date   = document.getElementById('f-date').value || todayStr();
+  const cat    = document.getElementById('f-cat').value;
+  const name   = document.getElementById('f-name').value.trim() || cat;
+  const amount = parseFloat(document.getElementById('f-amount').value) || 0;
+  const memo   = document.getElementById('f-memo').value.trim();
   if (editingId) {
     const idx = state.transactions.findIndex(t=>t.id===editingId);
     state.transactions[idx] = { id: editingId, date, type: currentType, category: cat, name, amount, memo };
@@ -376,7 +382,7 @@ function submitTx() {
     showToast('記録しました ✓');
   }
   save(); render();
-  document.getElementById('ov-input').classList.remove('open');
+  closeSheet('ov-input');
 }
 
 function deleteTx() {
@@ -384,7 +390,7 @@ function deleteTx() {
   if (!confirm('この明細を削除しますか？')) return;
   state.transactions = state.transactions.filter(t=>t.id!==editingId);
   save(); render();
-  document.getElementById('ov-input').classList.remove('open');
+  closeSheet('ov-input');
   showToast('削除しました');
 }
 
@@ -392,6 +398,7 @@ function openSettings() {
   document.getElementById('s-initial').value = state.initialBalance || '';
   renderCats();
   document.getElementById('ov-settings').classList.add('open');
+  document.body.classList.add('sheet-open');
 }
 
 function saveSettings() {
@@ -423,7 +430,7 @@ function removeCat(type, idx) {
 function confirmClear() {
   if (!confirm('全データを削除します。この操作は取り消せません。')) return;
   state.transactions = []; save(); render();
-  document.getElementById('ov-settings').classList.remove('open');
+  closeSheet('ov-settings');
   showToast('データを削除しました');
 }
 
@@ -436,7 +443,7 @@ function exportCSV() {
   showToast('CSVを出力しました');
 }
 
-function ovClick(e, id) { if (e.target.id===id) document.getElementById(id).classList.remove('open'); }
+function ovClick(e, id) { if (e.target.id===id) closeSheet(id); }
 
 let _tt;
 function showToast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2200); }
