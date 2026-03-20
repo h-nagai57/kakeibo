@@ -7,605 +7,441 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="家計簿">
 <title>家計簿</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F7F5F0;
-    --surface: #FFFFFF;
-    --surface2: #F0EDE8;
-    --text: #1A1A18;
-    --text2: #6B6860;
-    --text3: #A09D98;
-    --border: rgba(26,26,24,0.1);
-    --border2: rgba(26,26,24,0.06);
-    --income: #1A6B4A;
-    --income-bg: #EAF5EE;
-    --expense: #C0392B;
-    --expense-bg: #FDF0EE;
-    --accent: #2C2C2A;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #111110;
-      --surface: #1C1C1A;
-      --surface2: #252523;
-      --text: #F0EDE8;
-      --text2: #8A8880;
-      --text3: #55534F;
-      --border: rgba(240,237,232,0.1);
-      --border2: rgba(240,237,232,0.05);
-      --income: #3DAA72;
-      --income-bg: #0D2318;
-      --expense: #E05C50;
-      --expense-bg: #2A1110;
-      --accent: #F0EDE8;
-    }
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; overscroll-behavior: none; }
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE8;
+  --ink: #1A1814;
+  --ink2: #6B6760;
+  --ink3: #A8A5A0;
+  --plus: #1A7A4A;
+  --plus-bg: #EAF5EF;
+  --minus: #C0392B;
+  --minus-bg: #FDECEA;
+  --accent: #2C5F8A;
+  --border: #E2DED8;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', sans-serif; background: var(--bg); color: var(--ink); }
 
-  /* ── Layout ── */
-  .shell { display: flex; flex-direction: column; height: 100%; max-width: 430px; margin: 0 auto; }
-  .header {
-    padding: calc(var(--safe-top) + 16px) 20px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border2);
-    flex-shrink: 0;
-  }
-  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .header-title { font-size: 11px; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; font-weight: 500; }
-  .header-balance { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500; color: var(--text); margin-top: 4px; }
-  .header-balance.negative { color: var(--expense); }
-  .header-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-  .icon-btn svg { width: 16px; height: 16px; stroke: var(--text2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#app { display: flex; flex-direction: column; height: 100%; }
 
-  /* ── Tabs ── */
-  .tabs { display: flex; padding: 12px 16px; gap: 6px; background: var(--surface); border-bottom: 1px solid var(--border2); flex-shrink: 0; }
-  .tab { flex: 1; padding: 8px 4px; text-align: center; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; border-radius: 8px; cursor: pointer; border: none; background: transparent; color: var(--text3); transition: all 0.18s; }
-  .tab.active { background: var(--accent); color: var(--bg); }
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-top) + 14px) 16px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.app-title { font-size: 17px; font-weight: 700; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.icon-btn svg { width: 17px; height: 17px; stroke: var(--ink2); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ── Content ── */
-  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .screen { display: none; }
-  .screen.active { display: block; }
+.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--safe-bottom) + 80px); }
 
-  /* ── Ledger ── */
-  .month-group { }
-  .month-label {
-    padding: 16px 20px 8px;
-    font-size: 11px; letter-spacing: 0.1em; color: var(--text3);
-    font-weight: 500; text-transform: uppercase;
-    position: sticky; top: 0; background: var(--bg); z-index: 1;
-    border-bottom: 1px solid var(--border2);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .month-summary { font-family: 'DM Mono', monospace; font-size: 11px; }
-  .month-summary .inc { color: var(--income); }
-  .month-summary .exp { color: var(--expense); }
-  .tx-row {
-    display: grid;
-    grid-template-columns: 48px 1fr auto;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border2);
-    gap: 12px;
-    background: var(--surface);
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .tx-row:active { background: var(--surface2); }
-  .tx-date { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); line-height: 1.4; }
-  .tx-date .day { font-size: 18px; font-weight: 500; color: var(--text); display: block; }
-  .tx-info { min-width: 0; }
-  .tx-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tx-cat { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .tx-memo { font-size: 11px; color: var(--text3); font-style: italic; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tx-right { text-align: right; flex-shrink: 0; }
-  .tx-amount { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
-  .tx-amount.income { color: var(--income); }
-  .tx-amount.expense { color: var(--expense); }
-  .tx-balance { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); margin-top: 3px; }
+/* 台帳 */
+.month-header {
+  padding: 10px 16px 5px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink3);
+  background: var(--bg); position: sticky; top: 0; z-index: 1;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.month-summary .inc { color: var(--plus); }
+.month-summary .exp { color: var(--minus); }
 
-  .empty-state { padding: 60px 20px; text-align: center; color: var(--text3); font-size: 14px; line-height: 1.8; }
+.tx-row {
+  display: flex; align-items: center;
+  padding: 11px 16px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 10px; cursor: pointer; transition: background .1s;
+}
+.tx-row:active { background: var(--surface2); }
 
-  /* ── FAB ── */
-  .fab {
-    position: fixed; bottom: calc(var(--safe-bottom) + 20px); right: 20px;
-    width: 56px; height: 56px; border-radius: 50%;
-    background: var(--accent); color: var(--bg);
-    border: none; font-size: 26px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    z-index: 100; transition: transform 0.15s;
-  }
-  .fab:active { transform: scale(0.92); }
+.tx-date-col { width: 36px; text-align: center; flex-shrink: 0; }
+.tx-date-day { font-size: 17px; font-weight: 700; line-height: 1; }
+.tx-date-dow { font-size: 10px; color: var(--ink3); margin-top: 2px; }
 
-  /* ── Modal ── */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; align-items: flex-end; }
-  .overlay.open { display: flex; }
-  .sheet {
-    background: var(--surface); width: 100%; border-radius: 20px 20px 0 0;
-    padding: 0 0 calc(var(--safe-bottom) + 20px);
-    max-height: 92vh; overflow-y: auto;
-  }
-  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 20px; }
-  .sheet-title { font-size: 16px; font-weight: 700; padding: 0 20px 16px; border-bottom: 1px solid var(--border2); }
+.tx-info { flex: 1; min-width: 0; }
+.tx-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-meta { font-size: 11px; color: var(--ink3); margin-top: 2px; }
 
-  /* ── Form ── */
-  .form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 3px; }
-  .seg-btn { padding: 8px; text-align: center; font-size: 13px; font-weight: 500; border-radius: 8px; cursor: pointer; border: none; background: transparent; color: var(--text2); transition: all 0.15s; }
-  .seg-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  .seg-btn.active.income-seg { color: var(--income); }
-  .seg-btn.active.expense-seg { color: var(--expense); }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 11px; letter-spacing: 0.08em; color: var(--text3); font-weight: 500; }
-  .field input, .field select, .field textarea {
-    padding: 12px 14px; border: 1px solid var(--border);
-    border-radius: 10px; background: var(--surface2);
-    color: var(--text); font-family: 'Noto Sans JP', sans-serif;
-    font-size: 16px; /* prevent iOS zoom */ outline: none;
-    transition: border-color 0.15s;
-    appearance: none; -webkit-appearance: none;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
-  .field textarea { resize: none; height: 72px; line-height: 1.6; }
-  .amount-wrap { position: relative; }
-  .amount-wrap::before { content: '¥'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; font-family: 'DM Mono', monospace; }
-  .amount-wrap input { padding-left: 30px; font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
-  .btn-submit {
-    padding: 14px; border-radius: 12px; border: none;
-    background: var(--accent); color: var(--bg);
-    font-size: 15px; font-weight: 700; cursor: pointer;
-    font-family: 'Noto Sans JP', sans-serif;
-    transition: opacity 0.15s;
-  }
-  .btn-submit:active { opacity: 0.8; }
-  .btn-delete {
-    padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-    background: transparent; color: var(--expense);
-    font-size: 14px; font-weight: 500; cursor: pointer;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
+.tx-right { display: flex; align-items: center; flex-shrink: 0; }
+.tx-col { text-align: right; min-width: 80px; padding: 0 0 0 10px; }
+.tx-col + .tx-col { border-left: 1px solid var(--border); margin-left: 10px; }
+.tx-col-label { font-size: 10px; color: var(--ink3); margin-bottom: 3px; }
+.tx-amount { font-size: 14px; font-weight: 700; white-space: nowrap; font-feature-settings: 'tnum'; }
+.tx-amount.plus { color: var(--plus); }
+.tx-amount.minus { color: var(--minus); }
+.tx-balance-wrap { position: relative; display: inline-block; min-width: 80px; text-align: right; }
+.tx-balance-bar { position: absolute; top: 0; right: 0; bottom: 0; background: rgba(26,122,74,0.13); border-radius: 3px; pointer-events: none; }
+.tx-balance { position: relative; font-size: 14px; font-weight: 500; white-space: nowrap; font-feature-settings: 'tnum'; z-index: 1; }
 
-  /* ── Settings ── */
-  .settings { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-  .settings-section { background: var(--surface); border-radius: 14px; overflow: hidden; border: 1px solid var(--border2); }
-  .settings-header { padding: 12px 16px; font-size: 11px; letter-spacing: 0.1em; color: var(--text3); font-weight: 500; border-bottom: 1px solid var(--border2); }
-  .settings-row { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border2); }
-  .settings-row:last-child { border-bottom: none; }
-  .settings-row label { font-size: 14px; color: var(--text); }
-  .settings-row input {
-    text-align: right; border: none; background: transparent; color: var(--text);
-    font-family: 'DM Mono', monospace; font-size: 16px; width: 160px; outline: none;
-    appearance: none; -webkit-appearance: none;
-  }
-  .settings-row input::placeholder { color: var(--text3); }
-  .btn-save { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: var(--bg); font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
-  .btn-danger { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--expense); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
-  .hint { font-size: 12px; color: var(--text3); line-height: 1.7; padding: 4px 0; }
+.empty { text-align: center; padding: 80px 20px; color: var(--ink3); line-height: 2; font-size: 14px; }
 
-  /* ── Confirm ── */
-  .confirm-box { position: fixed; inset: 0; z-index: 300; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); padding: 20px; }
-  .confirm-box.open { display: flex; }
-  .confirm-inner { background: var(--surface); border-radius: 16px; padding: 24px 20px; width: 100%; max-width: 320px; }
-  .confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .confirm-msg { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
-  .confirm-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .confirm-btns button { padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
-  .confirm-cancel { background: var(--surface2); color: var(--text); }
-  .confirm-ok { background: var(--expense); color: #fff; border-color: transparent; }
+/* FAB */
+.fab {
+  position: fixed; bottom: calc(var(--safe-bottom) + 24px); right: 20px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 28px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(44,95,138,0.38);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; transition: transform .15s;
+}
+.fab:active { transform: scale(0.92); }
 
-  /* ── Toast ── */
-  .toast { position: fixed; bottom: calc(var(--safe-bottom) + 90px); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 400; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Sheets */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 200; display: none; align-items: flex-end;
+}
+.overlay.open { display: flex; }
+.sheet {
+  width: 100%; background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 0 0 calc(var(--safe-bottom) + 20px);
+  max-height: 94vh; overflow-y: auto;
+}
+.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 18px; }
+.sheet-title { font-size: 16px; font-weight: 700; padding: 0 20px 14px; border-bottom: 1px solid var(--border); }
+
+/* 入力フォーム */
+.form-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 3px; }
+.seg-btn { padding: 9px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; border: none; background: transparent; color: var(--ink2); transition: all .15s; font-family: inherit; }
+.seg-btn.active-minus { background: var(--surface); color: var(--minus); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.seg-btn.active-plus  { background: var(--surface); color: var(--plus);  box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; color: var(--ink2); font-weight: 500; }
+.field input, .field select, .field textarea {
+  padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 16px; background: var(--bg); color: var(--ink);
+  font-family: inherit; appearance: none; -webkit-appearance: none; outline: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
+.field textarea { resize: none; height: 68px; line-height: 1.6; }
+.yen-wrap { position: relative; }
+.yen-wrap::before { content: '¥'; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink3); font-size: 16px; pointer-events: none; }
+.yen-wrap input { padding-left: 28px; font-size: 20px; font-weight: 700; }
+.btn-primary { padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-primary:active { opacity: 0.8; }
+.btn-ghost-danger { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--minus); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
+
+/* 設定 */
+.settings-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.s-section { background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.s-section-title { font-size: 11px; font-weight: 700; color: var(--ink3); letter-spacing: 0.07em; padding: 10px 14px 0; }
+.s-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); gap: 12px; }
+.s-row:last-child { border-bottom: none; }
+.s-row-label { font-size: 14px; color: var(--ink); }
+.s-row-sub { font-size: 11px; color: var(--ink3); margin-top: 1px; }
+.s-input { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: var(--surface); color: var(--ink); width: 140px; text-align: right; font-family: inherit; outline: none; }
+.s-input:focus { border-color: var(--accent); }
+.s-save-btn { padding: 8px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.cat-wrap { padding: 8px 14px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 12px; }
+.cat-tag-del { cursor: pointer; color: var(--ink3); font-size: 14px; line-height: 1; }
+.cat-add-row { display: flex; gap: 8px; padding: 0 14px 12px; }
+.cat-add-input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--surface); color: var(--ink); font-family: inherit; outline: none; }
+.cat-add-input:focus { border-color: var(--accent); }
+.cat-add-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn-danger { padding: 14px; border-radius: 12px; border: 1px solid var(--minus); background: var(--minus-bg); color: var(--minus); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.s-export-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; cursor: pointer; font-family: inherit; }
+.s-hint { font-size: 12px; color: var(--ink3); line-height: 1.7; text-align: center; padding: 0 8px; }
+
+/* Toast */
+.toast { position: fixed; bottom: calc(var(--safe-bottom) + 88px); left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .2s, transform .2s; z-index: 400; white-space: nowrap; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-
-<div class="shell">
-  <!-- Header -->
+<div id="app">
   <div class="header">
-    <div class="header-top">
-      <div>
-        <div class="header-title">現在の残高</div>
-        <div class="header-balance" id="hdr-balance">¥0</div>
-        <div class="header-sub" id="hdr-sub">初期残高を設定してください</div>
-      </div>
-      <div class="icon-btn" onclick="openSettings()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </div>
+    <div class="app-title">📒 家計簿</div>
+    <div class="icon-btn" onclick="openSettings()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('ledger', this)">台帳</button>
-    <button class="tab" onclick="switchTab('settings-screen', this)">設定</button>
-  </div>
-
-  <!-- Content -->
-  <div class="content">
-
-    <!-- 台帳 -->
-    <div class="screen active" id="screen-ledger">
-      <div id="ledger-body"></div>
-    </div>
-
-    <!-- 設定 -->
-    <div class="screen" id="screen-settings-screen">
-      <div class="settings">
-        <div class="settings-section">
-          <div class="settings-header">初期残高</div>
-          <div class="settings-row">
-            <label>残高</label>
-            <input type="number" id="s-balance" inputmode="numeric" placeholder="0">
-          </div>
-          <div class="settings-row" style="border:none;">
-            <span class="hint">台帳の計算起点になります。過去の記録を消さずに変更できます。</span>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <div class="settings-header">収支分類のカスタマイズ</div>
-          <div class="settings-row">
-            <label>収入分類</label>
-            <input type="text" id="s-income-cats" style="width:200px;font-family:'Noto Sans JP';font-size:13px;" placeholder="給与,副収入,...">
-          </div>
-          <div class="settings-row">
-            <label>支出分類</label>
-            <input type="text" id="s-expense-cats" style="width:200px;font-family:'Noto Sans JP';font-size:13px;" placeholder="食費,交通費,...">
-          </div>
-          <div class="settings-row" style="border:none;">
-            <span class="hint">カンマ区切りで入力してください。</span>
-          </div>
-        </div>
-
-        <button class="btn-save" onclick="saveSettings()">保存</button>
-
-        <div class="settings-section">
-          <div class="settings-header">データ管理</div>
-          <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:12px;">
-            <button class="btn-danger" onclick="confirmClear()" style="width:100%;">すべてのデータを削除</button>
-            <span class="hint">※ 削除したデータは元に戻せません。</span>
-          </div>
-        </div>
-
-        <div class="hint" style="text-align:center;">
-          iPhoneのSafariで「共有」→「ホーム画面に追加」でアプリとして使えます
-        </div>
-      </div>
-    </div>
-
-  </div>
+  <div class="content" id="ledger"></div>
+  <button class="fab" onclick="openAdd()">＋</button>
 </div>
 
-<!-- FAB -->
-<button class="fab" onclick="openAdd()" id="fab">＋</button>
-
-<!-- 入力 Sheet -->
-<div class="overlay" id="overlay-add" onclick="handleOverlayClick(event, 'overlay-add')">
-  <div class="sheet" id="sheet-add">
+<!-- 入力シート -->
+<div class="overlay" id="ov-input" onclick="ovClick(event,'ov-input')">
+  <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" id="sheet-title">記録を追加</div>
-    <div class="form">
-      <input type="hidden" id="f-id">
+    <div class="sheet-title" id="input-title">記録を追加</div>
+    <div class="form-body">
       <div class="seg">
-        <button class="seg-btn active expense-seg" id="seg-expense" onclick="setType('expense')">支出</button>
-        <button class="seg-btn income-seg" id="seg-income" onclick="setType('income')">収入</button>
+        <button class="seg-btn active-minus" id="seg-minus" onclick="setType('minus')">− 支出</button>
+        <button class="seg-btn" id="seg-plus" onclick="setType('plus')">＋ 収入</button>
       </div>
-      <div class="field">
-        <label>日付</label>
-        <input type="date" id="f-date">
-      </div>
-      <div class="field">
-        <label>分類</label>
-        <select id="f-cat"></select>
-      </div>
-      <div class="field">
-        <label>内容（使途）</label>
-        <input type="text" id="f-name" placeholder="例：スーパー" inputmode="text">
-      </div>
+      <div class="field"><label>日付</label><input type="date" id="f-date"></div>
+      <div class="field"><label>収支分類</label><select id="f-cat"></select></div>
+      <div class="field"><label>内容（使途）</label><input type="text" id="f-name" placeholder="例：スーパー、飲み代" autocomplete="off"></div>
       <div class="field">
         <label>金額</label>
-        <div class="amount-wrap">
-          <input type="number" id="f-amount" inputmode="decimal" placeholder="0">
+        <div class="yen-wrap"><input type="number" id="f-amount" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <div class="field"><label>メモ（任意）</label><textarea id="f-memo" placeholder="補足があれば"></textarea></div>
+      <button class="btn-primary" onclick="submitTx()">保存する</button>
+      <button class="btn-ghost-danger" id="btn-del-tx" onclick="deleteTx()">この明細を削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 設定シート -->
+<div class="overlay" id="ov-settings" onclick="ovClick(event,'ov-settings')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">設定</div>
+    <div class="settings-body">
+      <div class="s-section">
+        <div class="s-section-title">残高設定</div>
+        <div class="s-row">
+          <div><div class="s-row-label">初期残高</div><div class="s-row-sub">台帳の計算起点</div></div>
+          <input type="number" class="s-input" id="s-initial" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="s-row">
+          <div class="s-row-label">設定を保存</div>
+          <button class="s-save-btn" onclick="saveSettings()">保存</button>
         </div>
       </div>
-      <div class="field">
-        <label>メモ（任意）</label>
-        <textarea id="f-memo" placeholder="補足があれば"></textarea>
+      <div class="s-section">
+        <div class="s-section-title">支出カテゴリ</div>
+        <div class="cat-wrap" id="cat-expense-list"></div>
+        <div class="cat-add-row">
+          <input class="cat-add-input" id="new-cat-expense" placeholder="新しいカテゴリ">
+          <button class="cat-add-btn" onclick="addCat('expense')">追加</button>
+        </div>
       </div>
-      <button class="btn-submit" onclick="submitTx()">保存</button>
-      <button class="btn-delete" id="btn-delete" style="display:none;" onclick="deleteTx()">削除</button>
+      <div class="s-section">
+        <div class="s-section-title">収入カテゴリ</div>
+        <div class="cat-wrap" id="cat-income-list"></div>
+        <div class="cat-add-row">
+          <input class="cat-add-input" id="new-cat-income" placeholder="新しいカテゴリ">
+          <button class="cat-add-btn" onclick="addCat('income')">追加</button>
+        </div>
+      </div>
+      <div class="s-section">
+        <div class="s-row">
+          <div><div class="s-row-label">CSVエクスポート</div><div class="s-row-sub">全データをCSV形式で保存</div></div>
+          <button class="s-export-btn" onclick="exportCSV()">出力</button>
+        </div>
+      </div>
+      <button class="btn-danger" onclick="confirmClear()">⚠ 全データを削除する</button>
+      <div class="s-hint">Safariで「共有」→「ホーム画面に追加」でアプリのように使えます</div>
     </div>
   </div>
 </div>
 
-<!-- Confirm -->
-<div class="confirm-box" id="confirm-box">
-  <div class="confirm-inner">
-    <div class="confirm-title" id="confirm-title">確認</div>
-    <div class="confirm-msg" id="confirm-msg"></div>
-    <div class="confirm-btns">
-      <button class="confirm-cancel" onclick="closeConfirm()">キャンセル</button>
-      <button class="confirm-ok" id="confirm-ok">削除</button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ──
+const DOW = ['日','月','火','水','木','金','土'];
 let state = {
-  txs: [],
+  transactions: [],
   initialBalance: 0,
-  incomeCats: ['給与','賞与','副収入','その他収入'],
-  expenseCats: ['食費','外食','交通費','日用品','光熱費','通信費','娯楽','医療','被服','家に納金','SMBCカード','楽天カード','その他'],
+  categories: {
+    expense: ['食費','外食','交通費','日用品','娯楽','医療','被服','光熱費','通信費','家に納金','SMBCカード','楽天カード','旅行','その他'],
+    income:  ['給与','賞与','副収入','NISA','その他収入']
+  }
 };
+let currentType = 'minus';
 let editingId = null;
-let currentType = 'expense';
 
-// ── Persist ──
-function save() { localStorage.setItem('kakeibo_v2', JSON.stringify(state)); }
-function load() {
-  try {
-    const d = localStorage.getItem('kakeibo_v2');
-    if (d) state = { ...state, ...JSON.parse(d) };
-  } catch(e) {}
+function save() { localStorage.setItem('kakeibo_v3', JSON.stringify(state)); }
+function load() { try { const d = localStorage.getItem('kakeibo_v3'); if (d) state = JSON.parse(d); } catch(e) {} }
+function fmt(n) { return '¥' + Math.abs(Math.round(n)).toLocaleString('ja-JP'); }
+function fmtBal(n) { const r = Math.round(n); return (r < 0 ? '-¥' : '¥') + Math.abs(r).toLocaleString('ja-JP'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function parseDate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
+function todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function calcBalances() {
+  const sorted = [...state.transactions].sort((a,b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.id - b.id);
+  let bal = state.initialBalance; const map = {};
+  for (const tx of sorted) { bal += tx.type === 'plus' ? tx.amount : -tx.amount; map[tx.id] = bal; }
+  return map;
 }
 
-// ── Init ──
-load();
-renderAll();
-
-// ── Render ──
-function renderAll() {
-  renderHeader();
-  renderLedger();
-  renderSettingsForm();
-}
-
-function calcBalance() {
-  const sorted = [...state.txs].sort((a,b) => a.date.localeCompare(b.date) || a.id - b.id);
-  let bal = state.initialBalance;
-  const balMap = {};
-  sorted.forEach(t => {
-    bal += t.type === 'income' ? t.amount : -t.amount;
-    balMap[t.id] = bal;
-  });
-  return { current: bal, map: balMap };
-}
-
-function renderHeader() {
-  const { current } = calcBalance();
-  const el = document.getElementById('hdr-balance');
-  el.textContent = fmtYen(current);
-  el.className = 'header-balance' + (current < 0 ? ' negative' : '');
-  document.getElementById('hdr-sub').textContent =
-    state.txs.length === 0 ? '記録がまだありません' :
-    `全 ${state.txs.length} 件の記録`;
-}
-
-function renderLedger() {
-  const body = document.getElementById('ledger-body');
-  if (!state.txs.length) {
-    body.innerHTML = '<div class="empty-state">まだ記録がありません。<br>＋ボタンから追加してください。</div>';
+function render() {
+  const el = document.getElementById('ledger');
+  if (!state.transactions.length) {
+    el.innerHTML = '<div class="empty">まだ記録がありません。<br>右下の ＋ ボタンから追加してください。</div>';
     return;
   }
-
-  const { map } = calcBalance();
-  const sorted = [...state.txs].sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
-
-  // group by month
+  const balMap = calcBalances();
+  const sorted = [...state.transactions].sort((a,b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.id - b.id);
   const groups = {};
-  sorted.forEach(t => {
-    const m = t.date.substring(0, 7);
-    if (!groups[m]) groups[m] = [];
-    groups[m].push(t);
-  });
+  sorted.forEach(tx => { const k = tx.date.substring(0,7); if (!groups[k]) groups[k]=[]; groups[k].push(tx); });
+
+  // バー幅計算用：全残高の最大値
+  const allBals = Object.values(balMap);
+  const maxBal = allBals.length ? Math.max(...allBals.map(Math.abs)) : 1;
 
   let html = '';
-  Object.keys(groups).sort().reverse().forEach(month => {
-    const txs = groups[month];
-    const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    const [y,m] = month.split('-');
-    html += `<div class="month-group">
-      <div class="month-label">
-        <span>${y}年${parseInt(m)}月</span>
-        <span class="month-summary">
-          <span class="inc">+${fmtNum(inc)}</span>
-          <span style="color:var(--text3);"> / </span>
-          <span class="exp">-${fmtNum(exp)}</span>
-        </span>
-      </div>`;
-    txs.forEach(t => {
-      const d = t.date.split('-');
-      const bal = map[t.id];
-      const isIncome = t.type === 'income';
-      html += `<div class="tx-row" onclick="openEdit(${t.id})">
-        <div class="tx-date">
-          <span class="day">${parseInt(d[2])}</span>
-          ${fmtWeekday(t.date)}
-        </div>
+  for (const [key, txs] of Object.entries(groups)) {
+    const [y,m] = key.split('-');
+    const inc = txs.filter(t=>t.type==='plus').reduce((s,t)=>s+t.amount,0);
+    const exp = txs.filter(t=>t.type==='minus').reduce((s,t)=>s+t.amount,0);
+    html += `<div class="month-header"><span>${y}年${parseInt(m)}月</span><span class="month-summary"><span class="inc">+¥${inc.toLocaleString()}</span> / <span class="exp">-¥${exp.toLocaleString()}</span></span></div>`;
+    for (const tx of txs) {
+      const d = parseDate(tx.date);
+      const bal = balMap[tx.id] ?? 0;
+      const isPlus = tx.type === 'plus';
+      const barPct = bal < 0 ? 0 : Math.round(Math.min(bal / maxBal * 100, 100));
+      html += `<div class="tx-row" onclick="openEdit(${tx.id})">
+        <div class="tx-date-col"><div class="tx-date-day">${d.getDate()}</div><div class="tx-date-dow">${DOW[d.getDay()]}</div></div>
         <div class="tx-info">
-          <div class="tx-name">${esc(t.name)}</div>
-          <div class="tx-cat">${esc(t.cat)}</div>
-          ${t.memo ? `<div class="tx-memo">${esc(t.memo)}</div>` : ''}
+          <div class="tx-name">${esc(tx.name)}</div>
+          <div class="tx-meta">${esc(tx.category)}${tx.memo ? ' · '+esc(tx.memo) : ''}</div>
         </div>
         <div class="tx-right">
-          <div class="tx-amount ${t.type}">${isIncome?'+':'-'}${fmtNum(t.amount)}</div>
-          <div class="tx-balance">${fmtYen(bal)}</div>
+          <div class="tx-col"><div class="tx-col-label">変動額</div><div class="tx-amount ${tx.type}">${isPlus?'+':'−'}${fmt(tx.amount)}</div></div>
+          <div class="tx-col"><div class="tx-col-label">残高</div>
+            <div class="tx-balance-wrap">
+              <div class="tx-balance-bar" style="width:${barPct}%"></div>
+              <div class="tx-balance" style="${bal < 0 ? 'color:var(--minus)' : ''}">${fmtBal(bal)}</div>
+            </div>
+          </div>
         </div>
       </div>`;
-    });
-    html += '</div>';
-  });
-  body.innerHTML = html;
-}
-
-function renderSettingsForm() {
-  document.getElementById('s-balance').value = state.initialBalance || '';
-  document.getElementById('s-income-cats').value = state.incomeCats.join(',');
-  document.getElementById('s-expense-cats').value = state.expenseCats.join(',');
-}
-
-// ── Tabs ──
-function switchTab(id, btn) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-  btn.classList.add('active');
-  document.getElementById('fab').style.display = id === 'ledger' ? 'flex' : 'none';
-}
-
-// ── Settings ──
-function openSettings() {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('screen-settings-screen').classList.add('active');
-  document.querySelectorAll('.tab')[1].classList.add('active');
-  document.getElementById('fab').style.display = 'none';
-}
-
-function saveSettings() {
-  const b = parseInt(document.getElementById('s-balance').value);
-  if (!isNaN(b)) state.initialBalance = b;
-  const ic = document.getElementById('s-income-cats').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const ec = document.getElementById('s-expense-cats').value.split(',').map(s=>s.trim()).filter(Boolean);
-  if (ic.length) state.incomeCats = ic;
-  if (ec.length) state.expenseCats = ec;
-  save();
-  renderAll();
-  showToast('設定を保存しました');
-}
-
-// ── Form ──
-function setType(t) {
-  currentType = t;
-  document.getElementById('seg-expense').classList.toggle('active', t==='expense');
-  document.getElementById('seg-income').classList.toggle('active', t==='income');
-  updateCatOptions();
-}
-
-function updateCatOptions() {
-  const cats = currentType === 'income' ? state.incomeCats : state.expenseCats;
-  const sel = document.getElementById('f-cat');
-  sel.innerHTML = cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    }
+  }
+  el.innerHTML = html;
 }
 
 function openAdd() {
   editingId = null;
-  currentType = 'expense';
-  document.getElementById('sheet-title').textContent = '記録を追加';
-  document.getElementById('f-id').value = '';
+  document.getElementById('input-title').textContent = '記録を追加';
   document.getElementById('f-date').value = todayStr();
   document.getElementById('f-name').value = '';
   document.getElementById('f-amount').value = '';
   document.getElementById('f-memo').value = '';
-  document.getElementById('btn-delete').style.display = 'none';
-  setType('expense');
-  document.getElementById('overlay-add').classList.add('open');
-  setTimeout(() => document.getElementById('f-name').focus(), 300);
+  document.getElementById('btn-del-tx').style.display = 'none';
+  setType('minus');
+  document.getElementById('ov-input').classList.add('open');
 }
 
 function openEdit(id) {
-  const t = state.txs.find(x=>x.id===id);
-  if (!t) return;
+  const tx = state.transactions.find(t => t.id === id);
+  if (!tx) return;
   editingId = id;
-  currentType = t.type;
-  document.getElementById('sheet-title').textContent = '記録を編集';
-  document.getElementById('f-id').value = id;
-  document.getElementById('f-date').value = t.date;
-  document.getElementById('f-name').value = t.name;
-  document.getElementById('f-amount').value = t.amount;
-  document.getElementById('f-memo').value = t.memo || '';
-  document.getElementById('btn-delete').style.display = 'block';
-  setType(t.type);
-  document.getElementById('f-cat').value = t.cat;
-  document.getElementById('overlay-add').classList.add('open');
+  document.getElementById('input-title').textContent = '明細を編集';
+  document.getElementById('f-date').value = tx.date;
+  document.getElementById('f-name').value = tx.name;
+  document.getElementById('f-amount').value = tx.amount;
+  document.getElementById('f-memo').value = tx.memo || '';
+  document.getElementById('btn-del-tx').style.display = 'block';
+  setType(tx.type);
+  document.getElementById('f-cat').value = tx.category;
+  document.getElementById('ov-input').classList.add('open');
 }
 
-function handleOverlayClick(e, id) {
-  if (e.target.id === id) document.getElementById(id).classList.remove('open');
+function setType(t) {
+  currentType = t;
+  document.getElementById('seg-minus').className = 'seg-btn' + (t==='minus' ? ' active-minus' : '');
+  document.getElementById('seg-plus').className  = 'seg-btn' + (t==='plus'  ? ' active-plus'  : '');
+  const cats = t === 'plus' ? state.categories.income : state.categories.expense;
+  document.getElementById('f-cat').innerHTML = cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if (editingId) { const tx = state.transactions.find(t=>t.id===editingId); if (tx) document.getElementById('f-cat').value = tx.category; }
 }
 
 function submitTx() {
   const date = document.getElementById('f-date').value;
-  const cat = document.getElementById('f-cat').value;
+  const cat  = document.getElementById('f-cat').value;
   const name = document.getElementById('f-name').value.trim();
   const amount = parseFloat(document.getElementById('f-amount').value);
   const memo = document.getElementById('f-memo').value.trim();
-  if (!date || !name || !amount || amount <= 0) { showToast('日付・内容・金額を入力してください'); return; }
-
+  if (!date)            { showToast('日付を入力してください'); return; }
+  if (!name)            { showToast('内容を入力してください'); return; }
+  if (!amount||amount<=0){ showToast('金額を入力してください'); return; }
   if (editingId) {
-    const idx = state.txs.findIndex(x=>x.id===editingId);
-    state.txs[idx] = { id: editingId, date, type: currentType, cat, name, amount, memo };
+    const idx = state.transactions.findIndex(t=>t.id===editingId);
+    state.transactions[idx] = { id: editingId, date, type: currentType, category: cat, name, amount, memo };
+    showToast('更新しました ✓');
   } else {
-    state.txs.push({ id: Date.now(), date, type: currentType, cat, name, amount, memo });
+    state.transactions.push({ id: Date.now(), date, type: currentType, category: cat, name, amount, memo });
+    showToast('記録しました ✓');
   }
-  save();
-  renderAll();
-  document.getElementById('overlay-add').classList.remove('open');
-  showToast(editingId ? '更新しました' : '追加しました');
+  save(); render();
+  document.getElementById('ov-input').classList.remove('open');
 }
 
 function deleteTx() {
-  const id = editingId;
-  const t = state.txs.find(x=>x.id===id);
-  if (!t) return;
-  showConfirm(`「${t.name}」を削除しますか？`, () => {
-    state.txs = state.txs.filter(x=>x.id!==id);
-    save(); renderAll();
-    document.getElementById('overlay-add').classList.remove('open');
-    showToast('削除しました');
+  if (!editingId) return;
+  if (!confirm('この明細を削除しますか？')) return;
+  state.transactions = state.transactions.filter(t=>t.id!==editingId);
+  save(); render();
+  document.getElementById('ov-input').classList.remove('open');
+  showToast('削除しました');
+}
+
+function openSettings() {
+  document.getElementById('s-initial').value = state.initialBalance || '';
+  renderCats();
+  document.getElementById('ov-settings').classList.add('open');
+}
+
+function saveSettings() {
+  const v = parseInt(document.getElementById('s-initial').value);
+  state.initialBalance = isNaN(v) ? 0 : v;
+  save(); render(); showToast('設定を保存しました ✓');
+}
+
+function renderCats() {
+  ['expense','income'].forEach(type => {
+    document.getElementById(`cat-${type}-list`).innerHTML =
+      state.categories[type].map((c,i)=>`<span class="cat-tag">${esc(c)}<span class="cat-tag-del" onclick="removeCat('${type}',${i})">×</span></span>`).join('');
   });
 }
 
-// ── Confirm ──
-let confirmCallback = null;
-function showConfirm(msg, cb) {
-  document.getElementById('confirm-msg').textContent = msg;
-  confirmCallback = cb;
-  document.getElementById('confirm-box').classList.add('open');
-  document.getElementById('confirm-ok').onclick = () => { closeConfirm(); cb && cb(); };
+function addCat(type) {
+  const inp = document.getElementById(`new-cat-${type}`);
+  const val = inp.value.trim();
+  if (!val) return;
+  if (state.categories[type].includes(val)) { showToast('すでに存在します'); return; }
+  state.categories[type].push(val);
+  inp.value = ''; save(); renderCats();
 }
-function closeConfirm() { document.getElementById('confirm-box').classList.remove('open'); }
+
+function removeCat(type, idx) {
+  state.categories[type].splice(idx,1); save(); renderCats();
+}
 
 function confirmClear() {
-  showConfirm('すべての記録と設定を削除します。この操作は取り消せません。', () => {
-    localStorage.removeItem('kakeibo_v2');
-    state = { txs: [], initialBalance: 0, incomeCats: ['給与','賞与','副収入','その他収入'], expenseCats: ['食費','外食','交通費','日用品','光熱費','通信費','娯楽','医療','被服','家に納金','SMBCカード','楽天カード','その他'] };
-    renderAll();
-    showToast('データを削除しました');
-  });
+  if (!confirm('全データを削除します。この操作は取り消せません。')) return;
+  state.transactions = []; save(); render();
+  document.getElementById('ov-settings').classList.remove('open');
+  showToast('データを削除しました');
 }
 
-// ── Helpers ──
-function fmtNum(n) { return Math.round(n).toLocaleString('ja-JP'); }
-function fmtYen(n) { return (n < 0 ? '-¥' : '¥') + fmtNum(Math.abs(n)); }
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtWeekday(dateStr) {
-  const days = ['日','月','火','水','木','金','土'];
-  const d = new Date(dateStr + 'T00:00:00');
-  return days[d.getDay()];
+function exportCSV() {
+  const balMap = calcBalances();
+  const sorted = [...state.transactions].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.id-b.id);
+  let csv = '\uFEFF日付,収支,カテゴリ,内容,金額,残高,メモ\n';
+  sorted.forEach(tx => { csv += `${tx.date},${tx.type==='plus'?'収入':'支出'},${tx.category},${tx.name},${tx.type==='plus'?tx.amount:-tx.amount},${balMap[tx.id]||0},${tx.memo||''}\n`; });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})); a.download=`kakeibo_${todayStr()}.csv`; a.click();
+  showToast('CSVを出力しました');
 }
 
-// ── Toast ──
-let toastTimer;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
-}
+function ovClick(e, id) { if (e.target.id===id) document.getElementById(id).classList.remove('open'); }
+
+let _tt;
+function showToast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2200); }
+
+load(); render();
 </script>
 </body>
 </html>
