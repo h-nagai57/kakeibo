@@ -210,17 +210,6 @@ html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギ�
     <div class="sheet-title">設定</div>
     <div class="settings-body">
       <div class="s-section">
-        <div class="s-section-title">残高設定</div>
-        <div class="s-row">
-          <div><div class="s-row-label">初期残高</div><div class="s-row-sub">台帳の計算起点</div></div>
-          <input type="number" class="s-input" id="s-initial" inputmode="numeric" placeholder="0">
-        </div>
-        <div class="s-row">
-          <div class="s-row-label">設定を保存</div>
-          <button class="s-save-btn" onclick="saveSettings()">保存</button>
-        </div>
-      </div>
-      <div class="s-section">
         <div class="s-section-title">支出カテゴリ</div>
         <div class="cat-wrap" id="cat-expense-list"></div>
         <div class="cat-add-row">
@@ -236,14 +225,7 @@ html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギ�
           <button class="cat-add-btn" onclick="addCat('income')">追加</button>
         </div>
       </div>
-      <div class="s-section">
-        <div class="s-row">
-          <div><div class="s-row-label">CSVエクスポート</div><div class="s-row-sub">全データをCSV形式で保存</div></div>
-          <button class="s-export-btn" onclick="exportCSV()">出力</button>
-        </div>
-      </div>
       <button class="btn-danger" onclick="confirmClear()">⚠ 全データを削除する</button>
-      <div class="s-hint">Safariで「共有」→「ホーム画面に追加」でアプリのように使えます</div>
     </div>
   </div>
 </div>
@@ -414,15 +396,8 @@ function deleteTx() {
 }
 
 function openSettings() {
-  document.getElementById('s-initial').value = state.initialBalance || '';
   renderCats();
   document.getElementById('ov-settings').classList.add('open');
-}
-
-function saveSettings() {
-  const v = parseInt(document.getElementById('s-initial').value);
-  state.initialBalance = isNaN(v) ? 0 : v;
-  save(); render(); showToast('設定を保存しました ✓');
 }
 
 function renderCats() {
@@ -466,7 +441,8 @@ function ovClick(e, id) { if (e.target.id===id) closeSheet(id); }
 let _tt;
 function showToast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
-load(); render();
+load();
+render();
 </script>
 </body>
 </html>
