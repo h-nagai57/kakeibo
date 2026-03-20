@@ -27,7 +27,6 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', sans-serif; background: var(--bg); color: var(--ink); }
-body.sheet-open { overflow: hidden; position: fixed; width: 100%; }
 
 #app { display: flex; flex-direction: column; height: 100%; }
 
@@ -112,31 +111,31 @@ body.sheet-open { overflow: hidden; position: fixed; width: 100%; }
   max-height: 94vh; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 18px; }
-.sheet-title { font-size: 16px; font-weight: 700; padding: 0 20px 14px; border-bottom: 1px solid var(--border); }
+.sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 14px; }
+.sheet-title { font-size: 15px; font-weight: 700; padding: 0 16px 12px; border-bottom: 1px solid var(--border); }
 
 /* 入力フォーム */
-.form-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.form-body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.form-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 3px; }
-.seg-btn { padding: 9px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; border: none; background: transparent; color: var(--ink2); transition: all .15s; font-family: inherit; }
+.seg-btn { padding: 8px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; border: none; background: transparent; color: var(--ink2); transition: all .15s; font-family: inherit; }
 .seg-btn.active-minus { background: var(--surface); color: var(--minus); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 .seg-btn.active-plus  { background: var(--surface); color: var(--plus);  box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field label { font-size: 12px; color: var(--ink2); font-weight: 500; }
-.field input, .field select, .field textarea {
-  padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
-  font-size: 16px; background: var(--bg); color: var(--ink);
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; color: var(--ink2); font-weight: 500; }
+.field input, .field select {
+  padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 15px; background: var(--bg); color: var(--ink);
   font-family: inherit; appearance: none; -webkit-appearance: none; outline: none;
 }
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
-.field textarea { resize: none; height: 68px; line-height: 1.6; }
+.field input:focus, .field select:focus { border-color: var(--accent); background: #fff; }
 .yen-wrap { position: relative; }
-.yen-wrap::before { content: '¥'; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink3); font-size: 16px; pointer-events: none; }
-.yen-wrap input { padding-left: 28px; font-size: 20px; font-weight: 700; }
-.btn-primary { padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.yen-wrap::before { content: '¥'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink3); font-size: 15px; pointer-events: none; }
+.yen-wrap input { padding-left: 24px; font-size: 20px; font-weight: 700; }
+.btn-primary { padding: 13px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .btn-primary:active { opacity: 0.8; }
-.btn-ghost-danger { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--minus); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
+.btn-ghost-danger { padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--minus); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
 
 /* 設定 */
 .settings-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -188,14 +187,16 @@ body.sheet-open { overflow: hidden; position: fixed; width: 100%; }
         <button class="seg-btn active-minus" id="seg-minus" onclick="setType('minus')">− 支出</button>
         <button class="seg-btn" id="seg-plus" onclick="setType('plus')">＋ 収入</button>
       </div>
-      <div class="field"><label>日付</label><input type="date" id="f-date"></div>
-      <div class="field"><label>収支分類</label><select id="f-cat"></select></div>
+      <div class="form-row-2col">
+        <div class="field"><label>日付</label><input type="date" id="f-date"></div>
+        <div class="field"><label>収支分類</label><select id="f-cat"></select></div>
+      </div>
       <div class="field"><label>内容（使途）</label><input type="text" id="f-name" placeholder="例：スーパー、飲み代" autocomplete="off"></div>
       <div class="field">
         <label>金額</label>
         <div class="yen-wrap"><input type="number" id="f-amount" inputmode="decimal" placeholder="0"></div>
       </div>
-      <div class="field"><label>メモ（任意）</label><textarea id="f-memo" placeholder="補足があれば"></textarea></div>
+      <div class="field"><label>メモ（任意）</label><input type="text" id="f-memo" placeholder="補足があれば" autocomplete="off"></div>
       <button class="btn-primary" onclick="submitTx()">保存する</button>
       <button class="btn-ghost-danger" id="btn-del-tx" onclick="deleteTx()">この明細を削除</button>
     </div>
@@ -261,6 +262,21 @@ let state = {
 };
 let currentType = 'minus';
 let editingId = null;
+
+// シート内のtouchmoveだけ通し、オーバーレイ背景へは伝播させない
+document.querySelectorAll('.sheet').forEach(sheet => {
+  sheet.addEventListener('touchmove', e => { e.stopPropagation(); }, { passive: true });
+});
+// オーバーレイ背景のtouchmoveは止める（背後のページスクロールを防ぐ）
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('touchmove', e => {
+    if (e.target === ov) e.preventDefault();
+  }, { passive: false });
+  // タップで閉じる（touchendで確実に検知）
+  ov.addEventListener('touchend', e => {
+    if (e.target === ov) closeSheet(ov.id);
+  });
+});
 
 function save() { localStorage.setItem('kakeibo_v3', JSON.stringify(state)); }
 function load() { try { const d = localStorage.getItem('kakeibo_v3'); if (d) state = JSON.parse(d); } catch(e) {} }
@@ -334,7 +350,6 @@ function openAdd() {
   document.getElementById('btn-del-tx').style.display = 'none';
   setType('minus');
   document.getElementById('ov-input').classList.add('open');
-  document.body.classList.add('sheet-open');
 }
 
 function openEdit(id) {
@@ -350,7 +365,12 @@ function openEdit(id) {
   setType(tx.type);
   document.getElementById('f-cat').value = tx.category;
   document.getElementById('ov-input').classList.add('open');
-  document.body.classList.add('sheet-open');
+}
+
+function openSettings() {
+  document.getElementById('s-initial').value = state.initialBalance || '';
+  renderCats();
+  document.getElementById('ov-settings').classList.add('open');
 }
 
 function setType(t) {
@@ -364,7 +384,6 @@ function setType(t) {
 
 function closeSheet(id) {
   document.getElementById(id).classList.remove('open');
-  document.body.classList.remove('sheet-open');
 }
 
 function submitTx() {
@@ -398,7 +417,6 @@ function openSettings() {
   document.getElementById('s-initial').value = state.initialBalance || '';
   renderCats();
   document.getElementById('ov-settings').classList.add('open');
-  document.body.classList.add('sheet-open');
 }
 
 function saveSettings() {
